@@ -8,8 +8,8 @@ html, body {
     padding: 0;
     font-family: system-ui, sans-serif;
     color: #222;
-    background: #f7f7f7;
     overflow-x: hidden;
+    scroll-behavior: smooth;
 }
 
 /* ========================== */
@@ -17,77 +17,133 @@ html, body {
 /* ========================== */
 .hero {
     width: 100vw;
-    height: 40vh;
+    height: 100vh;
     display: flex;
+    flex-wrap: nowrap;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 0 1rem;
-    background: linear-gradient(to bottom, #95a7d1, #202839);
+    background: linear-gradient(to bottom, #d0d7e7, #758bbb);
     color: #fff;
 }
 
 .hero h1 {
-    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
     max-width: 850px;
+    margin-bottom: 0.5rem;
 }
 
 .hero p {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    font-size: clamp(0.9rem, 2.5vw, 1.2rem);
     max-width: 850px;
-    margin-top: 0.5rem;
+    line-height: 1.5;
 }
 
 /* ========================== */
 /* MAP + GLOBE SECTION */
 /* ========================== */
-#map-section {
+#map-section, #country-detail-section {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: flex-start;
     padding: 2rem;
-    background: linear-gradient(to bottom, #202839, #030a16);
 }
 
-.globe-container {
-    flex: 1;
-    min-width: 300px;
+#map-section {
+    background: linear-gradient(to bottom, #758bbb, #3b465a);
+}
+
+
+/* Globe containers */
+#map-section .globe-container,
+#country-detail-section .globe-container {
+    flex: 0 1 40%;
+    min-width: 150px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-#globe-svg {
-    display: block;
-    margin: 0 auto;
+/* SVG settings */
+#globe-svg, #globe-svg-2 {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
 }
 
-body {
-    background: black; /* page background black */
-    color: white;      /* default text white */
-}
-
-
+/* Story text */
 .story-text {
-    flex: 1;
-    min-width: 300px;
-    margin: 1rem;
+    flex: 0 1 55%;
+    min-width: 150px;
+    margin-left: 2rem;
     color: #f7f7f7;
+    text-align: left;
+    font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+}
+
+.story-text h2 {
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+}
+
+/* Country info panel */
+.country-info {
+    flex: 0 1 55%;
+    min-width: 150px;
+    margin-left: 2rem;
+    color: #fff;
+}
+
+.country-info h2 {
+    font-size: clamp(1.2rem, 2vw, 2rem);
+    margin-bottom: 0.5rem;
+}
+
+.country-info p {
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    line-height: 1.5;
+}
+
+#country-detail-section {
+    display: flex;
+    flex-wrap: nowrap;           /* stay side by side */
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 2rem;
+    background: linear-gradient(to bottom, #3b465a, #232c3c); /* same gradient as globe 1 */
+}
+
+/* Tooltip */
+#globe-tooltip {
+    position: absolute;
+    pointer-events: none;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 12px;
+    display: none;
+    z-index: 1000;
 }
 
 /* ========================== */
 /* RESPONSIVE DESIGN */
 /* ========================== */
 @media (max-width: 900px) {
-    #map-section {
+    #map-section, #country-detail-section {
         flex-direction: column;
         align-items: center;
     }
 
-    .globe-container, .story-text {
-        width: 90%;
+    .globe-container, .story-text, .country-info {
+        flex: 1 1 100%;
+        max-width: 90%;
+        margin: 1rem 0;
         text-align: center;
+    }
+
+    #globe-svg, #globe-svg-2 {
+        max-height: 50vh;
     }
 }
