@@ -1,11 +1,4 @@
-/* ========================== */
-/* RESET AND BASE STYLES */
-/* ========================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+
 
 html, body {
     width: 100%;
@@ -20,9 +13,6 @@ body {
     background: #f7f7f7;
 }
 
-/* ========================== */
-/* HERO SECTION (FIRST PAGE) */
-/* ========================== */
 .hero {
     width: 100vw;
     height: 100vh;
@@ -47,31 +37,14 @@ body {
     margin-top: 1rem;
 }
 
-/* ========================== */
-/* MAP + GLOBE SECTION (SECOND PAGE) */
-/* ========================== */
 #map-section {
     width: 100vw;
     height: 100vh;
     display: flex;
-    justify-content: flex-start; /* left-align globe */
-    align-items: center;         /* vertical center */
+    justify-content: flex-start; 
     padding-left: 0.5rem;
-    padding-top: 0.5rem;
-    background-color: #162417;
-}
-
-.globe-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-
-#globe {
-    width: 100%;
-    height: 80vh; /* globe height */
+    padding-top: 10rem;
+    background-color: #3c1a1a ;
 }
 
 .story-text {
@@ -81,24 +54,10 @@ body {
     color: #f7f7f7
 }
 
-/* ========================== */
-/* RESPONSIVE DESIGN */
-/* ========================== */
 @media (max-width: 900px) {
     #map-section {
         flex-direction: column;
         align-items: center;
         padding-left: 0;
-    }
-
-    .globe-container, .story-text {
-        width: 90%;
-        margin-left: 0;
-        text-align: center;
-    }
-
-    #globe {
-        width: 80%;
-        height: 35vh;
     }
 }
