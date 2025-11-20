@@ -7,10 +7,9 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="style.css" />
-
 </head>
-
 <body>
+    <!-- Header / Hero Section -->
     <header class="hero">
         <h1>Shaking Across Scales: Global Earthquake Trends and Regional Surveillance Gaps</h1>
         <p>
@@ -20,15 +19,28 @@
         </p>
     </header>
 
+    <!-- Globe Section -->
     <main>
         <section id="map-section">
+            <!-- Story Text -->
             <div class="story-text">
                 <h2>Why Do Earthquakes Happen?</h2>
                 <p>Japan has a dense seismic network, while some regions of South America remain under-monitored.</p>
                 <p>Tracking quakes globally helps scientists and local governments prepare for future events.</p>
                 <p>Explore more data on how monitoring networks vary across continents.</p>
             </div>
+
+            <!-- Globe Container -->
+            <div class="globe-container">
+                <div id="globe"></div>
+            </div>
         </section>
     </main>
+
+    <!-- Scripts (order matters!) -->
+    <script src="https://unpkg.com/three/build/three.min.js"></script>
+    <script src="https://unpkg.com/three/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three-globe@2.24.12/dist/three-globe.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
