@@ -6,61 +6,84 @@ const tooltip = d3.select("#globe-tooltip");
 // ==========================
 // PAGE 2: EARTH LAYERS PLOT
 // ==========================
-// Page 2: Earth structure slice
-// Page 2: Earth structure slice
-// Earth layers
+
 const layers = [
-  { name: "Crust", color: "#f4d06f", description: "The Earth's crust is the outermost layer.", thickness: 40 },
-  { name: "Lithosphere", color: "#f2a65a", description: "The lithosphere is the rigid outer layer (crust + upper mantle).", thickness: 30 },
-  { name: "Asthenosphere", color: "#f28c28", description: "The asthenosphere is a weak, flowing layer beneath the lithosphere.", thickness: 50 },
-  { name: "Mantle", color: "#d64161", description: "The mantle lies beneath the lithosphere and asthenosphere, extending deep into Earth.", thickness: 70 }
+  { name: "Crust", color: "#d2c6a4ff", description: "…", thickness: 40 },
+  { name: "Lithosphere", color: "#8e8174ff", description: "…", thickness: 30 },
+  { name: "Asthenosphere", color: "#5b4c3dff", description: "…", thickness: 50 },
+  { name: "Mantle", color: "#3a3637ff", description: "…", thickness: 70 },
 ];
 
-// 3D cutaway dimensions
-const width = 400;
-const height = 250;
-const skewX = 40; // horizontal skew to create angled look
-let currentY = 0;
+const width = 300;
+const height = 500;
 
 const svg = d3.select("#earth-structure-plot")
   .append("svg")
-  .attr("viewBox", `0 0 ${width + skewX} ${height + 20}`)
+  .attr("viewBox", `0 0 ${width} ${height}`)
   .attr("width", "100%")
   .attr("height", "100%");
 
-layers.forEach(layer => {
-  // Draw polygon for angled 3D look
-  const points = [
-    [0, currentY],
-    [width, currentY],
-    [width + skewX, currentY + layer.thickness],
-    [skewX, currentY + layer.thickness]
-  ];
+const defs = svg.append("defs");
 
-  svg.append("polygon")
-    .attr("points", points.map(d => d.join(",")).join(" "))
-    .attr("fill", layer.color)
-    .attr("stroke", "#000")
-    .attr("stroke-width", 1)
+layers.forEach((layer, i) => {
+  const grad = defs.append("linearGradient")
+    .attr("id", `grad-${i}`)
+    .attr("x1", "0%")
+    .attr("y1", "0%")
+    .attr("x2", "0%")
+    .attr("y2", "100%");  // vertical gradient
+
+grad.append("stop")
+    .attr("offset", "0%")
+    .attr("stop-color", d3.rgb(layer.color).brighter(0.7));
+  grad.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", d3.rgb(layer.color).darker(0.7));
+});
+
+let currentY = 0;
+const totalThickness = d3.sum(layers, d => d.thickness);
+
+layers.forEach((layer, i) => {
+  const layerHeight = (layer.thickness / totalThickness) * height;
+
+  svg.append("rect")
+    .attr("x", 0)
+    .attr("y", currentY)
+    .attr("width", width)
+    .attr("height", layerHeight)
+    .attr("fill", `url(#grad-${i})`)  // use gradient here
     .attr("class", "layer")
-    .on("mouseover", () => d3.select("#earth-layer-info").text(layer.description))
-    .on("mouseout", () => d3.select("#earth-layer-info").text("Hover over a layer to see details."));
+    .on("mouseover", (event) => {
+      d3.select("#earth-layer-info").html(layer.description);
+      svg.selectAll(".layer").attr("opacity", 0.7);
+      d3.select(event.currentTarget).attr("opacity", 1);
+    })
+    .on("mouseout", () => {
+      d3.select("#earth-layer-info").text("Hover over a layer to see details.");
+      svg.selectAll(".layer").attr("opacity", 1);
+    })
+    .on("click", (event) => {
+      const rect = d3.select(event.currentTarget);
+      rect.transition()
+          .duration(400)
+          .attr("transform", `translate(-5, -5) scale(1.05)`)
+        .transition()
+          .duration(400)
+          .attr("transform", `translate(0,0) scale(1)`);
+    });
 
-  // Add text labels inside layer
   svg.append("text")
     .attr("x", width / 2)
-    .attr("y", currentY + layer.thickness / 2)
+    .attr("y", currentY + layerHeight / 2)
     .attr("text-anchor", "middle")
     .attr("alignment-baseline", "middle")
     .attr("fill", "#fff")
     .style("pointer-events", "none")
     .text(layer.name);
 
-  currentY += layer.thickness;
+  currentY += layerHeight;
 });
-
-
-
 
 
 // ==========================
@@ -196,43 +219,6 @@ const observerButton = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 observerButton.observe(document.querySelector("#country-detail-section"));
 
-// Draw connector
-function drawConnector(country) {
-    if (!country) return;
-    if (connectorSvg) { connectorSvg.remove(); connectorSvg = null; }
-
-    connectorSvg = d3.select(document.documentElement)
-        .append("svg")
-        .attr("id", "connector-svg")
-        .style("position", "fixed")
-        .style("top", 0)
-        .style("left", 0)
-        .style("width", "100%")
-        .style("height", "100%")
-        .style("pointer-events", "none");
-
-    const globeRect = svg2.node().getBoundingClientRect();
-    const mapRect = countryMapSvg.node().getBoundingClientRect();
-    const centroid = projection2(d3.geoCentroid(country));
-
-    const startX = globeRect.left + centroid[0];
-    const startY = globeRect.top + centroid[1];
-    const endX = mapRect.left + mapRect.width / 2;
-    const endY = mapRect.top + mapRect.height / 2;
-
-    connectorSvg.append("line")
-        .attr("x1", startX)
-        .attr("y1", startY)
-        .attr("x2", startX)
-        .attr("y2", startY)
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4 4")
-        .transition()
-        .duration(800)
-        .attr("x2", endX)
-        .attr("y2", endY);
-}
 
 // Load countries for Globe 2
 d3.json("https://unpkg.com/world-atlas@2/countries-110m.json").then(worldData => {
@@ -262,32 +248,34 @@ d3.json("https://unpkg.com/world-atlas@2/countries-110m.json").then(worldData =>
             tooltip.style("display", "none");
         })
         .on("click", (event, d) => {
-            if (selectedCountry) {
-                countriesGroup2.selectAll(".country")
-                    .filter(c => c === selectedCountry)
-                    .attr("fill", "#000");
-            }
-            d3.select(event.currentTarget).attr("fill", "#ffb347");
-            selectedCountry = d;
+    if (selectedCountry) {
+        countriesGroup2.selectAll(".country")
+            .filter(c => c.properties.name === selectedCountry.properties.name)
+            .attr("fill", "#000");
+    }
 
-            d3.select("#country-name").text(d.properties.name);
-            d3.select("#country-details").text(`You clicked on ${d.properties.name}.`);
+    d3.select(event.currentTarget).attr("fill", "#ffb347");
+    selectedCountry = d;
 
-            countryMapSvg.selectAll("*").remove();
-            const width = countryMapSvg.node().getBoundingClientRect().width;
-            const height = countryMapSvg.node().getBoundingClientRect().height;
-            const countryProjection = d3.geoMercator().fitSize([width, height], d);
-            const countryPath = d3.geoPath().projection(countryProjection);
+    d3.select("#country-name").text(d.properties.name);
+    d3.select("#country-details").text(`You clicked on ${d.properties.name}.`);
 
-            countryMapSvg.append("path")
-                .datum(d)
-                .attr("d", countryPath)
-                .attr("fill", "#2156e9ff")
-                .attr("stroke", "#000")
-                .attr("stroke-width", 1);
+    // redraw the zoomed country map
+    countryMapSvg.selectAll("*").remove();
+    const width = countryMapSvg.node().getBoundingClientRect().width;
+    const height = countryMapSvg.node().getBoundingClientRect().height;
+    const countryProjection = d3.geoMercator().fitSize([width, height], d);
+    const countryPath = d3.geoPath().projection(countryProjection);
 
-            drawConnector(d);
-        });
+    countryMapSvg.append("path")
+        .datum(d)
+        .attr("d", countryPath)
+        .attr("fill", "#2156e9ff")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 1);
+
+});
+
 
     resizeGlobe2();
 });
@@ -321,7 +309,3 @@ function resizeGlobe2() {
 }
 window.addEventListener("resize", resizeGlobe2);
 
-// Remove connector on scroll
-window.addEventListener("scroll", () => {
-    if (connectorSvg) { connectorSvg.remove(); connectorSvg = null; }
-});

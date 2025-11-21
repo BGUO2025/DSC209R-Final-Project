@@ -24,7 +24,7 @@ html, body {
     justify-content: center;
     align-items: center;
     text-align: center;
-    background: linear-gradient(to bottom, #d0d7e7, #475a83);
+    background: linear-gradient(to bottom, #d0d7e7, #63718b);
     color: #fff;
 }
 
@@ -51,31 +51,34 @@ html, body {
 }
 
 /* Page 2 Earth Layers */
-.earth-structure-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    gap: 2rem;
-}
-
 #earth-structure-plot {
     width: 70%;
     height: 70%;
     position: relative;
+    perspective: 800px; /* 3D effect */
 }
 
-/* Add simple 3D effect with skewed layers */
 .layer {
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.3s, filter 0.3s;
 }
 
 .layer:hover {
-    transform: scale(1.05) translateZ(5px);
+    transform: scale(1.05) translateZ(20px) rotateX(5deg);
 }
+
+#earth-layer-info {
+    margin-top: 1rem;
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    color: #f7f7f7;
+}
+
+/* Add subtle gradient background */
+#earth-structure-section {
+    background: linear-gradient(to bottom, #63718b, #475a83);
+    color: #fff;
+}
+
 
 
 /* Responsive */
