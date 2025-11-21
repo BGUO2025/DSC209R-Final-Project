@@ -12,6 +12,7 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/topojson.v3.min.js"></script>
 </head>
+
 <body>
 
   <!-- Page 1 (Intro)-->
@@ -20,19 +21,16 @@
     <p>
       On a planet of constant motions, hundreds of earthquakes ripple across continents and fault lines. 
       While some regions rumble under dense seismic sensors and others shake almost unnoticed, most never 
-      make headlines. 
+      make headlines.
     </p>
   </header>
 
   <!-- Page 2 (Earth layers)-->
-
-<section id="earth-structure-section" class="full-page">
-  <h2>Layers of Earth</h2>
-  <div id="earth-structure-plot"></div>
-  <div id="earth-layer-info" class="info-box">Hover over a layer to see details.</div>
-</section>
-
-
+  <section id="earth-structure-section" class="full-page">
+    <h2>Layers of Earth</h2>
+    <div id="earth-structure-plot"></div>
+    <div id="earth-layer-info" class="info-box">Hover over a layer to see details.</div>
+  </section>
 
   <!-- Page 3 (Globe 1)-->
   <section id="map-section">
@@ -50,22 +48,31 @@
 
   <!-- Page 4 (Globe 2 + Country) -->
   <section id="country-detail-section">
-  <div class="globe-container">
-    <svg id="globe-svg-2" width="600" height="600"></svg>
-  </div>
+    <div class="globe-container">
+      <svg id="globe-svg-2"></svg>
+    </div>
 
-  <div class="country-info">
-    <h2 id="country-name">Click a country</h2>
-    <p id="country-details">Details about the selected country will appear here.</p>
-    
-    <!-- Add this SVG for the zoomed-in country map -->
-    <svg id="country-map" width="100%" height="300px"></svg>
+    <div class="country-info">
+      <h2 id="country-name">Click a country</h2>
+      <p id="country-details">Details about the selected country will appear here.</p>
 
-  </div>
-</section>
+      <svg id="country-map" width="100%" height="300px"></svg>
+    </div>
+  </section>
 
+  <!-- Connector overlay SVG: this will host the animated line -->
+  <svg id="line-connector" class="connector-svg"></svg>
 
   <!-- JS -->
   <script src="script.js"></script>
+
+  <!-- Page navigation dots -->
+<div id="page-nav">
+  <span class="nav-dot" data-target="hero"></span>
+  <span class="nav-dot" data-target="earth-structure-section"></span>
+  <span class="nav-dot" data-target="map-section"></span>
+  <span class="nav-dot" data-target="country-detail-section"></span>
+</div>
+
 </body>
 </html>
