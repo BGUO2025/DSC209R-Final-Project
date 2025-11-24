@@ -17,7 +17,7 @@
 <body>
 
   <!-- Page 1 (Intro)-->
-  <header class="hero">
+  <header id = "hero" class="hero">
     <h1>Shaking Across Scales: Global Earthquake Trends</h1>
     <p>
       On a planet of constant motions, hundreds of earthquakes ripple across continents and fault lines. 
@@ -61,6 +61,19 @@
     </div>
   </section>
 
+  <!-- Page 5: California Earthquake Heatmap -->
+  <section id="heatmap-section" class="full-page">
+    <h2>California Earthquake Heatmap</h2>
+    <p>Animated heatmap of earthquakes across California over time.</p>
+    <div style="width: 100%; height: 80vh;">
+      <iframe 
+        src="CA_Heatmaps/california_earthquakes_heatmap_animated.html" 
+        style="width:100%; height:100%; border:none;">
+      </iframe>
+    </div>
+  </section>
+
+
   <!-- Connector overlay SVG: this will host the animated line -->
   <svg id="line-connector" class="connector-svg"></svg>
 
@@ -73,7 +86,9 @@
   <span class="nav-dot" data-target="earth-structure-section"></span>
   <span class="nav-dot" data-target="map-section"></span>
   <span class="nav-dot" data-target="country-detail-section"></span>
+  <span class="nav-dot" data-target="heatmap-section"></span>
 </div>
+
 
 </body>
 </html>

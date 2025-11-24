@@ -86,32 +86,62 @@ loadData()
 // ==========================
 // DOT FOR PAGES
 // ==========================
-const dots = document.querySelectorAll(".nav-dot");
-const sections = [document.querySelector(".hero"),
-                  document.getElementById("earth-structure-section"),
-                  document.getElementById("map-section"),
-                  document.getElementById("country-detail-section")];
+document.addEventListener("DOMContentLoaded", () => {
+    const dots = document.querySelectorAll(".nav-dot");
 
-// Scroll to section on dot click
-dots.forEach((dot, i) => {
-  dot.addEventListener("click", () => {
-    sections[i].scrollIntoView({ behavior: "smooth" });
-  });
-});
+    const updateActiveDot = () => {
+        let closestDot = null;
+        let closestDistance = Infinity;
 
-// Highlight active dot on scroll
-window.addEventListener("scroll", () => {
-  const scrollPos = window.scrollY + window.innerHeight / 2;
+        dots.forEach(dot => {
+            const targetId = dot.getAttribute("data-target");
+            const targetEl = document.getElementById(targetId);
+            if (!targetEl) return;
 
-  sections.forEach((sec, idx) => {
-    const top = sec.offsetTop;
-    const bottom = top + sec.offsetHeight;
+            // distance from top of viewport to top of section
+            const rect = targetEl.getBoundingClientRect();
+            const distance = Math.abs(rect.top);
 
-    if (scrollPos >= top && scrollPos < bottom) {
-      dots.forEach(d => d.classList.remove("active"));
-      dots[idx].classList.add("active");
-    }
-  });
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestDot = dot;
+            }
+        });
+
+        if (closestDot) {
+            dots.forEach(d => d.classList.remove("active"));
+            closestDot.classList.add("active");
+        }
+    };
+
+    // Scroll to section on dot click
+    dots.forEach(dot => {
+        const targetId = dot.getAttribute("data-target");
+        const targetEl = document.getElementById(targetId);
+
+        dot.addEventListener("click", () => {
+            if (targetEl) {
+                targetEl.scrollIntoView({ behavior: "smooth" });
+                // highlight immediately
+                dots.forEach(d => d.classList.remove("active"));
+                dot.classList.add("active");
+            }
+        });
+    });
+
+    // Update on scroll and after scroll ends (scroll-snap)
+    window.addEventListener("scroll", updateActiveDot);
+    window.addEventListener("resize", updateActiveDot);
+
+    // Optional: observe scroll snapping end using IntersectionObserver
+    const observer = new IntersectionObserver(() => {
+        updateActiveDot();
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll("section, .hero").forEach(sec => observer.observe(sec));
+
+    // initial update
+    updateActiveDot();
 });
 
 
@@ -180,6 +210,8 @@ layers.forEach(layer => {
 // ==========================
 const svg1 = d3.select("#globe-svg");
 const path1 = d3.geoPath();
+const quakeHighlight = "#b30000";   // dark red
+
 const projection1 = d3.geoOrthographic().clipAngle(90);
 let rotate1 = [0, -20];
 let lastX1, lastY1;
@@ -268,37 +300,52 @@ async function plotEarthquakesPoints(sample_Size = null) {
         .append("circle")
         .attr("cx", d => projection1([d.longitude, d.latitude])[0])
         .attr("cy", d => projection1([d.longitude, d.latitude])[1])
-        .attr("r", d => Math.sqrt(Math.abs(d.mag)) * 2)
+        .attr("r", d => Math.sqrt(Math.abs(d.mag)) * 4)
         .attr("fill", "red")
         .attr("stroke", "#fff")
         .attr("stroke-width", 0.3)
-        .attr("opacity", 0.7)
-        .on("mouseover", (event, d) => {
+        .attr("opacity", d => 
+        isPointVisible(d.longitude, d.latitude, rotate1) ? 0.8 : 0)
+        .on("mouseover", function(event, d) {
+            // enlarge dot
+            d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("fill", "#4d1515ff")
+            .attr("r", Math.sqrt(d.mag) * 8);  
+
             let location = d.place;
             let distance = "";
 
             if (d.place.includes(",")) {
                 const parts = d.place.split(",");
-                distance = parts[0].trim();       // e.g., "17 km E of Amahai"
-                location = parts[1].trim();       // e.g., "Indonesia"
+                distance = parts[0].trim();
+                location = parts[1].trim();
             }
 
             tooltip.html(`
-                <strong>${location}</strong><br>
-                ${distance ? `* Distance: ${distance}<br>` : ""}
-                * Mag: ${d.mag != null ? d.mag : "Unknown"}
+            <strong>${location}</strong><br>
+            ${distance ? `* Distance: ${distance}<br>` : ""}
+            * Mag: ${d.mag != null ? d.mag : "Unknown"}
             `)
             .style("display", "block")
             .style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY + 10) + "px");
+            .style("top",  (event.pageY + 10)  + "px");
         })
         .on("mousemove", event => {
             tooltip.style("left", (event.pageX + 10) + "px")
-                   .style("top", (event.pageY + 10) + "px");
+           .style("top",  (event.pageY + 10)  + "px");
         })
-        .on("mouseout", () => {
-            tooltip.style("display", "none");
-        });
+        .on("mouseout", function(event, d) {
+            tooltip.style("display","none");
+
+        // shrink back to original radius
+        d3.select(this)
+            .transition()
+            .duration(150)
+            .attr("fill", "red")
+            .attr("r", Math.sqrt(d.mag) * 4);
+    });
 }
 
 // Function to resize global to fit current container
@@ -319,7 +366,10 @@ function resizeGlobe1() {
 function updateEarthquakes() {
     svg1.selectAll(".earthquakes circle")
         .attr("cx", d => projection1([d.longitude, d.latitude])[0])
-        .attr("cy", d => projection1([d.longitude, d.latitude])[1]);
+        .attr("cy", d => projection1([d.longitude, d.latitude])[1])
+        .attr("opacity", d =>
+            isPointVisible(d.longitude, d.latitude, rotate1) ? 0.8 : 0
+        );
 }
 
 // Function to show data in front sphere
@@ -328,6 +378,18 @@ function updateClipPath() {
         .attr("d", path1({ type: "Sphere" }));
 }
 
+function isPointVisible(lon, lat, rotate) {
+    const λ = lon * Math.PI/180;
+    const φ = lat * Math.PI/180;
+
+    const λ0 = -rotate[0] * Math.PI/180; // invert rotation
+    const φ0 = -rotate[1] * Math.PI/180;
+
+    const cosc = Math.sin(φ0)*Math.sin(φ) +
+                 Math.cos(φ0)*Math.cos(φ)*Math.cos(λ - λ0);
+
+    return cosc > 0;  // visible hemisphere
+}
 
 // ==========================
 // PAGE 4: GLOBE 2 + CONNECTOR

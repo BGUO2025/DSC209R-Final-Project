@@ -35,7 +35,7 @@ html, body {
 }
 
 .nav-dot.active {
-  background-color: #0077ff;
+  background-color: #588dd8;
   transform: scale(1.3);
 }
 
