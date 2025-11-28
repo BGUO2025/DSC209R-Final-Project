@@ -110,7 +110,7 @@ const tooltip = d3.select("#globe-tooltip");
 document.addEventListener("DOMContentLoaded", () => {
   const hotspots = document.querySelectorAll(".hotspot");
   const infoBox = document.getElementById("earth-layer-info");
-  const defaultMsg = "Hover over the middle of each layer to learn more."
+  const defaultMsg = "Hover over middle of each layer to learn more."
 ;
 
   // safety: if no hotspots found, exit early
