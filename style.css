@@ -77,99 +77,96 @@ section, .hero {
     line-height: 1.5;
 }
 /* Earth Layers */
-.full-page {
-    width: 100vw;
-    height: fit-content;
-    display: flex;
-    flex-wrap: nowrap;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+
+#earth-structure h1 { 
+    color: #f7f7f7;
+}
+/* keep the section full-page */
+#earth-structure-section, .image-page {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  background: linear-gradient(to bottom, #63718b, #475a83 );
 }
 
-/* Page 2 Earth Layers */
-.info-box {
-  margin-top: 1rem;
-  color: #fff;
-  background: rgba(247, 20, 20, 0.6);
-  stroke: rgba(255, 255, 255, 0.6);
-  stroke-width: 5px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 1rem;
-  max-width: 80%;
-  text-align: center;
-  flex-wrap: nowrap;
+.image-hotspot-wrap {
+  position: relative;
+  width: 90%;
+  max-width: 760px;   /* change to taste */
+  margin: 0 auto;
 }
 
-.layer-slice {
-  transition: opacity 0.2s, stroke 0.2s;
+#earth-structure-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* invisible hotspots */
+.hotspot.invisible {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 20%;            /* hit area — increase for easier touch */
+  height: 20%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
+  z-index: 40;
+  outline: none;
 }
 
-.layer-slice:hover {
-  stroke: white;
-  stroke-width: 1px;
+/* accessible focus ring for keyboard users */
+.hotspot.invisible:focus-visible {
+  box-shadow: 0 0 0 2px rgba(90,144,255,0.35);
+  border-radius: 2px;
 }
 
+/* info box */
 #earth-layer-info {
-
-  margin-top: 1;        /* was 1rem */
-  margin-bottom: 50rem;     /* prevent extra space to nav dots */
-  padding: 8px 14px;
-  background: rgba(0,0,0,0.6);
-  color: white;
-  border-radius: 4px;
-  font-size: 1rem;
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  max-width: min(90%, 760px);
   text-align: center;
-  max-width: 80%;
-
-  white-space: pre-line;
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  pointer-events: none;
 }
 
-
-/* Add subtle gradient background */
-#earth-structure-section {
-    background: linear-gradient(to bottom, #63718b, #475a83);
-    color: #fff;
-}
-
-/* Responsive */
+/* small-screen adjustments */
 @media (max-width: 900px) {
-    .earth-structure-container {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    #earth-structure-plot,
-    #earth-layer-info {
-        width: 90%;
-        text-align: center;
-    }
+  .image-hotspot-wrap { max-width: 420px; }
+  .hotspot.invisible { width: 22%; height: 12%; } /* bigger touch areas on mobile */
+  #earth-structure-img { max-height: 55vh; }
 }
 
-/* Force SVG to scale responsively but stay capped */
-#earth-structure-plot svg {
-    width: min(70vw, 1600px);
-    height: auto;
-    display: block;
-    margin: 1.5rem auto 0.5rem auto;  /* top, right/left, bottom */
+/* SR-only (screen-reader friendly) fallback list */
+.sr-only {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
-.earth-layer-label {
-    fill: #fff;
-    font-weight: 600;
-    pointer-events: none;
 
-    /* CONTROLLED scaling */
-    font-size: clamp(1rem, 1.4vw, .5rem);
-
-    /* outline */
-    paint-order: stroke;
-    stroke: rgba(0, 0, 0, 0.8);
-    stroke-width: 3px;
-}
 
 /* ========================== */
 /* MAP + GLOBE SECTION */
@@ -186,7 +183,6 @@ section, .hero {
 #map-section {
     background: linear-gradient(to bottom, #475a83, #1f2a3f);
 }
-
 
 /* Globe containers */
 #map-section .globe-container,
