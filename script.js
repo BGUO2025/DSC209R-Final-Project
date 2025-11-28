@@ -129,6 +129,48 @@ document.addEventListener("DOMContentLoaded", () => {
     updateActiveDot();
 });
 
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestDot = dot;
+            }
+        });
+
+        if (closestDot) {
+            dots.forEach(d => d.classList.remove("active"));
+            closestDot.classList.add("active");
+        }
+    };
+
+    // Scroll to section on dot click
+    dots.forEach(dot => {
+        const targetId = dot.getAttribute("data-target");
+        const targetEl = document.getElementById(targetId);
+
+        dot.addEventListener("click", () => {
+            if (targetEl) {
+                targetEl.scrollIntoView({ behavior: "smooth" });
+                // highlight immediately
+                dots.forEach(d => d.classList.remove("active"));
+                dot.classList.add("active");
+            }
+        });
+    });
+
+    // Update on scroll and after scroll ends (scroll-snap)
+    window.addEventListener("scroll", updateActiveDot);
+    window.addEventListener("resize", updateActiveDot);
+
+    // Optional: observe scroll snapping end using IntersectionObserver
+    const observer = new IntersectionObserver(() => {
+        updateActiveDot();
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll("section, .hero").forEach(sec => observer.observe(sec));
+
+    // initial update
+    updateActiveDot();
+});
+
 
 // ==========================
 // PAGE 2: EARTH LAYERS PLOT
@@ -261,6 +303,7 @@ const path1R = d3.geoPath();
         // 2. projection(orthographicRaw()) --> Wrapped by project() to access useful member function and share interface with other projection funcs
             // LINK: https://github.com/d3/d3-geo/blob/main/src/projection/index.js
         // 3. projection(orthographicRaw()).clipAngle(Radian) --> Clip to the visible hemisphere
+
 const projection1 = d3.geoOrthographic().clipAngle(90);
 const projection1R = d3.geoOrthographic().clipAngle(90);
 
@@ -624,99 +667,6 @@ function isPointVisible(lon, lat, rotate) {
 }
 
 // Create a simple horizontal gradient legend for earthquake magnitude
-// function createGradientLegend(selection, data) {
-//     if (!data || data.length === 0) return;
-
-//     const minMag = d3.min(data, d => d.mag);
-//     const maxMag = d3.max(data, d => d.mag);
-
-//     const svgWidth = selection.node().getBoundingClientRect().width;
-//     const svgHeight = selection.node().getBoundingClientRect().height;
-
-//     const legendWidth = svgWidth * 0.25;  // 25% of SVG width
-//     const legendHeight = 14;
-//     const margin = 12;
-
-//     // Remove any existing legend
-//     selection.select("#legend-group").remove();
-
-//     // Create defs if not exist
-//     let defs = selection.select("defs");
-//     if (defs.empty()) defs = selection.append("defs");
-
-//     // Create linearGradient
-//     let grad = defs.select("#mag-gradient");
-//     if (grad.empty()) {
-//         grad = defs.append("linearGradient")
-//             .attr("id", "mag-gradient")
-//             .attr("x1", "0%")
-//             .attr("y1", "0%")
-//             .attr("x2", "100%")
-//             .attr("y2", "0%");
-//     }
-//     grad.selectAll("stop").remove();
-//     grad.append("stop").attr("offset", "0%").attr("stop-color", "pink");
-//     grad.append("stop").attr("offset", "100%").attr("stop-color", "red");
-
-//     // Create legend group
-//     const lg = selection.append("g")
-//         .attr("id", "legend-group")
-//         .attr("transform", `translate(${svgWidth - legendWidth - margin}, ${margin})`)
-//         .style("pointer-events", "none");
-
-//     // Background box
-//     lg.append("rect")
-//         .attr("x", -6)
-//         .attr("y", -6)
-//         .attr("width", legendWidth + 12)
-//         .attr("height", legendHeight + 36)
-//         .attr("rx", 6)
-//         .attr("fill", "#111")
-//         .attr("opacity", 0.6);
-
-//     // Gradient bar
-//     lg.append("rect")
-//         .attr("x", 0)
-//         .attr("y", 0)
-//         .attr("width", legendWidth)
-//         .attr("height", legendHeight)
-//         .attr("fill", "url(#mag-gradient)")
-//         .attr("stroke", "#fff")
-//         .attr("stroke-width", 0.4);
-
-//     // Labels
-//     lg.append("text")
-//         .attr("x", 0)
-//         .attr("y", legendHeight + 16)
-//         .attr("fill", "#fff")
-//         .attr("font-size", 11)
-//         .text(minMag.toFixed(1));
-
-//     lg.append("text")
-//         .attr("x", legendWidth / 2)
-//         .attr("y", legendHeight + 16)
-//         .attr("fill", "#fff")
-//         .attr("font-size", 11)
-//         .attr("text-anchor", "middle")
-//         .text(((minMag + maxMag) / 2).toFixed(1));
-
-//     lg.append("text")
-//         .attr("x", legendWidth)
-//         .attr("y", legendHeight + 16)
-//         .attr("fill", "#fff")
-//         .attr("font-size", 11)
-//         .attr("text-anchor", "end")
-//         .text(maxMag.toFixed(1));
-
-//     // Legend title
-//     lg.append("text")
-//         .attr("x", 0)
-//         .attr("y", -8)
-//         .attr("fill", "#fff")
-//         .attr("font-size", 12)
-//         .text("Magnitude");
-// }
-
 function createGradientLegend(data) {
   if (!data || data.length === 0) return;
 
@@ -755,9 +705,21 @@ function resizeGlobe1(selection, pathFunc, projectionFunc, idNameSphere, classNa
 }
 // ----------------------------------------------------------------------------
 
+function isPointVisible(lon, lat, rotate) {
+    const λ = lon * Math.PI/180;
+    const φ = lat * Math.PI/180;
+
+    const λ0 = -rotate[0] * Math.PI/180; // invert rotation
+    const φ0 = -rotate[1] * Math.PI/180;
+
+    const cosc = Math.sin(φ0)*Math.sin(φ) +
+                 Math.cos(φ0)*Math.cos(φ)*Math.cos(λ - λ0);
+
+    return cosc > 0;  // visible hemisphere
+}
 
 // ==========================
-// PAGE 4: GLOBE 2 + CONNECTOR
+// PAGE 4: GLOBE 2 
 // ==========================
 const svg2 = d3.select("#globe-svg-2");
 const path2 = d3.geoPath();
@@ -830,68 +792,10 @@ d3.json("https://unpkg.com/world-atlas@2/countries-110m.json").then(worldData =>
             .attr("fill", "#2156e9ff")
             .attr("stroke", "#000")
             .attr("stroke-width", 1);
-
-        drawConnector();
-        });
+      });
 
     resizeGlobe2();
 });
-
-// Connector Globe 2 + Country
-function drawConnector(){
-  // remove existing
-  if (connectorPath) connectorPath.remove();
-
-  const globeSvg = d3.select("#globe-svg-2").node();
-  const countrySvg = d3.select("#country-map").node();
-  const gBBox = globeSvg.getBoundingClientRect();
-  const cBBox = countrySvg.getBoundingClientRect();
-
-  const startX = gBBox.x + gBBox.width;
-  const startY = gBBox.y + gBBox.height / 2;
-  const endX = cBBox.x;
-  const endY = cBBox.y + cBBox.height / 2;
-
-  const connectorSvg = d3.select("#line-connector");
-
-  connectorPath = connectorSvg.append("path")
-    .attr("d", `M${startX},${startY} L${endX},${endY}`)
-    .attr("fill", "none")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 2)
-    .attr("stroke-dasharray", function() {
-      const len = this.getTotalLength();
-      return `${len} ${len}`;
-    })
-    .attr("stroke-dashoffset", function() {
-      return this.getTotalLength();
-    });
-
-  connectorPath.transition()
-    .duration(1000)
-    .ease(d3.easeLinear)
-    .attr("stroke-dashoffset", 0);
-}
-
-svg2.call(d3.drag()
-    .on("start", event => { lastX2 = event.x; lastY2 = event.y; })
-    .on("drag", event => {
-        const dx = event.x - lastX2;
-        const dy = event.y - lastY2;
-        lastX2 = event.x; lastY2 = event.y;
-        rotate2[0] += dx * 0.7;
-        rotate2[1] -= dy * 0.7;
-        rotate2[1] = Math.max(-90, Math.min(90, rotate2[1]));
-        projection2.rotate(rotate2);
-        svg2.selectAll("path").attr("d", path2);
-
-        // remove connector when globe moves
-        if (connectorPath) {
-            connectorPath.remove();
-            connectorPath = null;
-        }
-    })
-);
 
 function resizeGlobe2(){
   const cw = svg2.node().parentNode.getBoundingClientRect().width;
@@ -901,8 +805,6 @@ function resizeGlobe2(){
   svg2.select(".globe-sphere").attr("d", path2);
   svg2.selectAll(".country").attr("d", path2);
 
-  // optionally redraw connector if country is selected
-  if (selectedCountry) drawConnector();
 }
 window.addEventListener("resize", resizeGlobe2);
 window.addEventListener("scroll", () => {
