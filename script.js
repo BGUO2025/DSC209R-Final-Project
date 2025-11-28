@@ -1,50 +1,4 @@
-// Vonoroi Diagram (Optional)
-    // const points = earthquakeData.map(d => {
-    //     const [x, y] = projection1([d.longitude, d.latitude]);
-    //     return { x, y, data: d };
-    // });
 
-    // // 2. Create Voronoi diagram
-    // const voronoi = d3.Delaunay
-    //     .from(points, d => d.x, d => d.y)
-    //     .voronoi([0, 0, width, height]);
-
-    // svg1.append("g")
-    //     .attr("class", "voronoi")
-    //     .selectAll("path")
-    //     .data(points)
-    //     .enter()
-    //     .append("path")
-    //     .attr("stroke", "#352dbcff")
-    //     .attr("d", (d, i) => voronoi.renderCell(i))
-    //     .style("fill", "none")
-    //     .style("pointer-events", "all")
-    //     .on("mouseover", (event, d) => {
-    //         let location = d.data.place;
-    //         let distance = "";
-
-    //         if (d.data.place.includes(",")) {
-    //             const parts = d.data.place.split(",");
-    //             distance = parts[0].trim();
-    //             location = parts[1].trim();
-    //         }
-
-    //         tooltip.html(`
-    //             <strong>${location}</strong><br>
-    //             ${distance ? `* Distance: ${distance}<br>` : ""}
-    //             * Mag: ${d.data.mag != null ? d.data.mag : "Unknown"}
-    //         `)
-    //         .style("display", "block")
-    //         .style("left", (event.pageX + 10) + "px")
-    //         .style("top", (event.pageY + 10) + "px");
-    //     })
-    //     .on("mousemove", event => {
-    //         tooltip.style("left", (event.pageX + 10) + "px")
-    //             .style("top", (event.pageY + 10) + "px");
-    //     })
-    //     .on("mouseout", () => {
-    //         tooltip.style("display", "none");
-    //     });
 
 // ==========================
 // DATA LOADING
@@ -144,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateActiveDot();
 });
 
-
 // ==========================
 // TOOLTIP
 // ==========================
@@ -153,56 +106,54 @@ const tooltip = d3.select("#globe-tooltip");
 // ==========================
 // PAGE 2: EARTH LAYERS PLOT
 // ==========================
-const layers = [
-  { name: "Crust", color: "#d2c6a4", description: "Earth’s outer crust: thin and rigid", innerRadius: 130, outerRadius: 150 },
-  { name: "Lithosphere", color: "#8e8174", description: "Lithosphere: crust + upper mantle, rigid tectonic plates", innerRadius: 100, outerRadius: 130 },
-  { name: "Asthenosphere", color: "#5b4c3d", description: "Asthenosphere: partially molten, flows slowly", innerRadius: 70, outerRadius: 100 },
-  { name: "Mantle", color: "#3a3637", description: "Mantle: hot, convecting rock that makes up most of Earth’s volume", innerRadius: 20, outerRadius: 70 },
-];
+// Hotspot behavior: show layer info on hover/focus/click
+document.addEventListener("DOMContentLoaded", () => {
+  const hotspots = document.querySelectorAll(".hotspot");
+  const infoBox = document.getElementById("earth-layer-info");
+  const defaultMsg = "Hover over middle of each layer to learn more."
+;
 
-const width2D = 400;
-const height2D = 400;
+  // safety: if no hotspots found, exit early
+  if (!infoBox || hotspots.length === 0) {
+    // console.warn("No hotspots or info box found.");
+    return;
+  }
 
-const svg2D = d3.select("#earth-structure-plot")
-  .append("svg")
-    .attr("viewBox", `0 0 ${width2D} ${height2D}`)
-    .attr("width", "100%")
-    .attr("height", "100%")
-  .append("g")
-    .attr("transform", `translate(${width2D/2}, ${height2D/2})`);
+  hotspots.forEach(h => {
+    const name = h.dataset.name || "Layer";
+    const desc = h.dataset.desc || "";
 
-layers.forEach(layer => {
-  const arcGen = d3.arc()
-    .innerRadius(layer.innerRadius)
-    .outerRadius(layer.outerRadius)
-    .startAngle(-Math.PI/2)
-    .endAngle(Math.PI/2);
-
-  svg2D.append("path")
-    .attr("d", arcGen())
-    .attr("fill", layer.color)
-    .attr("class", "layer-slice")
-    .on("mouseover", event => {
-      d3.select("#earth-layer-info")
-        .html(`<strong>${layer.name}</strong><br>${layer.description}`);
-      svg2D.selectAll(".layer-slice").attr("opacity", 0.6);
-      d3.select(event.currentTarget).attr("opacity", 1);
-    })
-    .on("mouseout", () => {
-      d3.select("#earth-layer-info").html("Hover over a layer to see details.");
-      svg2D.selectAll(".layer-slice").attr("opacity", 1);
+    // Hover & focus show details
+    h.addEventListener("mouseover", () => {
+      infoBox.innerHTML = `<strong>${name}</strong><br>${desc}`;
+    });
+    h.addEventListener("focus", () => {
+      infoBox.innerHTML = `<strong>${name}</strong><br>${desc}`;
     });
 
-  const centroid = arcGen.centroid();
-  svg2D.append("text")
-    .attr("x", centroid[0] * 1.1)
-    .attr("y", centroid[1] * 1.1)
-    .attr("text-anchor", centroid[0] > 0 ? "start" : "end")
-    .attr("alignment-baseline", "middle")
-    .attr("fill", "#fff")
-    .style("pointer-events", "none")
-    .text(layer.name);
+    // mouseout & blur reset
+    h.addEventListener("mouseout", () => {
+      infoBox.textContent = defaultMsg;
+    });
+    h.addEventListener("blur", () => {
+      infoBox.textContent = defaultMsg;
+    });
+
+    // click for touch: show and persist briefly so users can read
+    let clickTimer;
+    h.addEventListener("click", (e) => {
+      e.preventDefault();
+      clearTimeout(clickTimer);
+      infoBox.innerHTML = `<strong>${name}</strong><br>${desc}`;
+      // persist for 3s then revert
+      clickTimer = setTimeout(() => {
+        infoBox.textContent = defaultMsg;
+      }, 3000);
+    });
+  });
 });
+
+
 
 
 // ==========================
