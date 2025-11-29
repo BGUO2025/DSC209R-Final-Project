@@ -71,75 +71,98 @@ console.log(sphereData)
 // ==========================
 // DOT FOR PAGES
 // ==========================
-// document.addEventListener("DOMContentLoaded", () => {
-    console.log("Hello World");
+// Locate the dot <nav> elements & container <section>/<header> elements
+const dots = document.querySelectorAll(".nav-dot");
+const sections = document.querySelectorAll("section, header.hero");
 
-    // Locate the dot <nav> element
-    const dots = document.querySelectorAll(".nav-dot");
+// Activate Dot on Click
+// Identify the selected dot and using closest distance method
+const updateActiveDot = () => {
+    let closestDot = null;
+    let closestDistance = Infinity;
 
-    // Identify active dot
-    const updateActiveDot = () => {
-        let closestDot = null;
-        let closestDistance = Infinity;
-
-        // Iterate each dot <span> element
-        dots.forEach(dot => {
-            // Get target ID from the attribute
-            const targetId = dot.getAttribute("data-target");
-            // Find the element matched with ID name
-            const targetEl = document.getElementById(targetId);
-            // If not defined, return 0
-            if (!targetEl) {
-                console.error(`Element with ID: ${targetId} does not exist`);
-                return;
-            }
-
-            // Get the size/position for the element & find the abs distance
-            const rect = targetEl.getBoundingClientRect();
-            const distance = Math.abs(rect.top);
-
-            // Update closestDot & closestDistance
-            closestDistance = Math.min(distance, closestDistance);
-            closestDot = distance < closestDistance ? dot : closestDot;
-        });
-
-        // If cloestDot defined, do smth
-        if (closestDot) {
-            // Reset all dot & Activate the selected dot
-            dots.forEach(d => d.classList.remove("active"));
-            closestDot.classList.add("active");
-        }
-    };
-
-    // Scroll to section on dot click
+    // Iterate each dot <span> element
     dots.forEach(dot => {
+        // Get target ID from the attribute
         const targetId = dot.getAttribute("data-target");
+        // Find the element matched with ID name
         const targetEl = document.getElementById(targetId);
+        // If not defined, return 0
+        if (!targetEl) {
+            console.error(`Element with ID: ${targetId} does not exist`);
+            return;
+        }
 
-        dot.addEventListener("click", () => {
-            if (targetEl) {
-                targetEl.scrollIntoView({ behavior: "smooth" });
-                // highlight immediately
-                dots.forEach(d => d.classList.remove("active"));
-                dot.classList.add("active");
-            }
-        });
+        // Get the size/position for the element & find the abs distance
+        const rect = targetEl.getBoundingClientRect();
+        const distance = Math.abs(rect.top);
+
+        // Update closestDot & closestDistance
+        closestDistance = Math.min(distance, closestDistance);
+        closestDot = distance < closestDistance ? dot : closestDot;
     });
 
-    // Update on scroll and after scroll ends (scroll-snap)
-    window.addEventListener("scroll", updateActiveDot);
-    window.addEventListener("resize", updateActiveDot);
+    // If cloestDot defined, do smth
+    if (closestDot) {
+        // Reset all dot & Activate the selected dot
+        dots.forEach(d => d.classList.remove("active"));
+        closestDot.classList.add("active");
+    }
+};
 
-    // Optional: observe scroll snapping end using IntersectionObserver
-    const observer = new IntersectionObserver(() => {
-        updateActiveDot();
-    }, { threshold: 0.5 });
+// Activate Dot on Viewing correponding page
+// Identify page view using Web API IntersectionObserver (param1: input container, param2: map of threshold)
+const observer = new IntersectionObserver(
+    (entries) => {
+        // For each element of the input container/iterable
+        entries.forEach(entry => {
+            // Only activate under this condition
+            if (entry.isIntersecting) {
+                // Identify the id for current page
+                const id = entry.target.id;
 
-    document.querySelectorAll("section, .hero").forEach(sec => observer.observe(sec));
+                // Highlight the dot with the matching page
+                dots.forEach(dot => {
+                    dot.classList.toggle("active", dot.dataset.target === id);
+                });
+            }
+        });
 
-    // initial update
-    updateActiveDot();
-// });
+    }, 
+    { 
+        // Page must occupy 50% of the viewport to be considered as current page
+        threshold: 0.5  
+    }
+);
+
+// Scroll to page on active dot click
+dots.forEach(dot => {
+    const targetId = dot.getAttribute("data-target");
+    const targetEl = document.getElementById(targetId);
+
+    dot.addEventListener("click", () => {
+        if (targetEl) {
+            targetEl.scrollIntoView({ behavior: "smooth" });
+            // highlight immediately
+            dots.forEach(d => d.classList.remove("active"));
+            dot.classList.add("active");
+        }
+    });
+});
+
+// Update active dot on page load, on scroll & after scroll ends (scroll-snap)
+updateActiveDot();
+window.addEventListener("scroll", updateActiveDot);
+window.addEventListener("resize", updateActiveDot);
+// Update active dot on view corresponding page
+sections.forEach(section => observer.observe(section));
+
+
+// *** This is Laura's code, I don't wanna delete it yet ***
+// const observer = new IntersectionObserver(() => {
+//     updateActiveDot();
+// }, { threshold: 0.5 });
+// document.querySelectorAll("section, .hero").forEach(sec => observer.observe(sec));
 
 
 // ==========================

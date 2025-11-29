@@ -149,11 +149,14 @@ section, .hero {
 
 /* info box */
 #earth-layer-info {
-    position: absolute;
-    bottom: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
+    /* This is Baixi, I commented out, pls lmk if any of this need to be used */
+    
+    /* position: absolute; */
+    /* bottom: 70px; */
+    /* left: 50%;
+    right: 50%; */
+    /* transform: translateX(-50%); */
+    /* z-index: 20; */
     background: rgba(0,0,0,0.75);
     color: #fff;
     border-radius: 8px;
