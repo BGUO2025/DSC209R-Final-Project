@@ -133,52 +133,165 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================
 // PAGE 2: EARTH LAYERS PLOT
 // ==========================
-// Hotspot behavior: show layer info on hover/focus/click
-document.addEventListener("DOMContentLoaded", () => {
-  const hotspots = document.querySelectorAll(".hotspot");
+
+function initHotspots() {
+  const hotspots = Array.from(document.querySelectorAll(".hotspot"));
   const infoBox = document.getElementById("earth-layer-info");
-  const defaultMsg = "Hover over middle of each layer to learn more."
-;
+  const earthSection = document.getElementById("earth-structure-section");
+  const defaultMsg = "Hover over middle of each layer to learn more.";
+  if (!infoBox) { console.warn("No #earth-layer-info element found."); return; }
+  if (!hotspots.length) { console.warn("No .hotspot elements found. Check your HTML."); return; }
 
-  // safety: if no hotspots found, exit early
-  if (!infoBox || hotspots.length === 0) {
-    // console.warn("No hotspots or info box found.");
-    return;
-  }
+  // visual debug flag
+  const debugShowBoxes = false;
 
-  hotspots.forEach(h => {
-    const name = h.dataset.name || "Layer";
-    const desc = h.dataset.desc || "";
+  // Ensure each hotspot is keyboard focusable and positioned
+  hotspots.forEach((h, i) => {
+    h.tabIndex = 0; // make focusable
+    h.style.position = h.style.position || "absolute";
+    if (!h.style.width) h.style.width = h.dataset.width || "18%";
+    if (!h.style.height) h.style.height = h.dataset.height || "10%";
+    if (!h.style.left) h.style.left = h.dataset.left || `${20 + i*10}%`;
+    if (!h.style.top) h.style.top = h.dataset.top || "50%";
 
-    // Hover & focus show details
-    h.addEventListener("mouseover", () => {
+    if (debugShowBoxes) {
+      h.style.background = "rgba(255,0,0,0.18)";
+      h.style.outline = "1px solid rgba(255,0,0,0.6)";
+    } else {
+      h.style.background = "transparent";
+      h.style.outline = "none";
+    }
+
+    const name = h.dataset.name || `Layer ${i+1}`;
+    const desc = h.dataset.desc || "No description supplied.";
+
+    const show = () => {
+      // set HTML (allow simple markup)
       infoBox.innerHTML = `<strong>${name}</strong><br>${desc}`;
-    });
-    h.addEventListener("focus", () => {
-      infoBox.innerHTML = `<strong>${name}</strong><br>${desc}`;
-    });
+    };
+    const reset = () => { infoBox.textContent = defaultMsg; };
 
-    // mouseout & blur reset
-    h.addEventListener("mouseout", () => {
-      infoBox.textContent = defaultMsg;
-    });
-    h.addEventListener("blur", () => {
-      infoBox.textContent = defaultMsg;
-    });
+    // pointer interactions
+    h.addEventListener("mouseenter", show);
+    h.addEventListener("mouseleave", reset);
 
-    // click for touch: show and persist briefly so users can read
-    let clickTimer;
+    // keyboard
+    h.addEventListener("focus", show);
+    h.addEventListener("blur", reset);
+
+    // clicks/touches on mobile: persist briefly
+    let timer = null;
     h.addEventListener("click", (e) => {
       e.preventDefault();
-      clearTimeout(clickTimer);
-      infoBox.innerHTML = `<strong>${name}</strong><br>${desc}`;
-      // persist for 3s then revert
-      clickTimer = setTimeout(() => {
-        infoBox.textContent = defaultMsg;
-      }, 3000);
+      clearTimeout(timer);
+      show();
+      timer = setTimeout(reset, 3000);
     });
+
+    h.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      clearTimeout(timer);
+      show();
+      timer = setTimeout(reset, 3000);
+    }, { passive: false });
   });
-});
+
+  // STYLE: make the info box narrower + taller (applied via JS to guarantee immediate effect)
+  infoBox.style.maxWidth = infoBox.dataset.maxWidth || "360px"; // shorter width
+  infoBox.style.minHeight = infoBox.dataset.minHeight || "120px"; // taller height
+  infoBox.style.boxSizing = "border-box";
+  infoBox.style.padding = infoBox.style.padding || "14px";
+
+  // ---------- FOCUS MANAGEMENT ----------
+  // When the earth section is visible, we want only hotspots to be tabbable.
+  const focusableSelector = 'a, button, input, select, textarea, [tabindex]';
+  const originalTabindex = new Map();
+
+  function disableOtherFocus() {
+    // store and set tabIndex = -1 for everything not a hotspot
+    document.querySelectorAll(focusableSelector).forEach(el => {
+      if (el.classList && el.classList.contains('hotspot')) return;
+      // don't change elements inside the earth section that are hotspots
+      if (earthSection.contains(el) && el.classList && el.classList.contains('hotspot')) return;
+
+      // save original if not yet saved
+      if (!originalTabindex.has(el)) {
+        originalTabindex.set(el, el.hasAttribute('tabindex') ? el.getAttribute('tabindex') : null);
+      }
+      try { el.tabIndex = -1; } catch (e) {}
+    });
+  }
+
+  function restoreFocus() {
+    originalTabindex.forEach((val, el) => {
+      if (!document.contains(el)) return; // element might be removed
+      if (val === null) {
+        el.removeAttribute('tabindex');
+      } else {
+        el.setAttribute('tabindex', val);
+      }
+    });
+    originalTabindex.clear();
+  }
+
+  // IntersectionObserver to detect when page/section is in view
+  let earthActive = false;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.55) {
+        earthActive = true;
+        disableOtherFocus();
+        // ensure first hotspot gets focus if user pressed Tab into section
+        // (do not force-focus; only if nothing focused)
+        if (!document.activeElement || document.activeElement === document.body) {
+          hotspots[0].focus();
+        }
+      } else {
+        if (earthActive) {
+          earthActive = false;
+          restoreFocus();
+        }
+      }
+    });
+  }, { threshold: [0.55] });
+  io.observe(earthSection);
+
+  // Trap Tab to only cycle through hotspots while section active
+  document.addEventListener("keydown", (e) => {
+    if (!earthActive) return;
+    if (e.key !== "Tab") return;
+
+    const visibleHotspots = hotspots.filter(h => h.offsetParent !== null); // visible ones
+    if (!visibleHotspots.length) return;
+
+    const currentIndex = visibleHotspots.indexOf(document.activeElement);
+    if (e.shiftKey) {
+      // SHIFT+TAB: move backwards
+      if (currentIndex === -1 || currentIndex === 0) {
+        e.preventDefault();
+        visibleHotspots[visibleHotspots.length - 1].focus();
+      }
+      // otherwise allow normal backwards behavior within hotspots
+    } else {
+      // TAB forward
+      if (currentIndex === visibleHotspots.length - 1 || currentIndex === -1) {
+        e.preventDefault();
+        visibleHotspots[0].focus();
+      }
+      // otherwise default tab moves to next hotspot
+    }
+  });
+
+  // initial state message
+  infoBox.textContent = defaultMsg;
+}
+
+// Run immediately if DOM ready, otherwise wait
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initHotspots);
+} else {
+  initHotspots();
+}
 
 
 // ==========================

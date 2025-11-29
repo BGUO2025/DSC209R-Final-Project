@@ -77,8 +77,10 @@ section, .hero {
     line-height: 1.5;
 }
 /* Earth Layers */
-#earth-structure h1 { 
-    color: #f7f7f7;
+#earth-structure-section h1 {
+    color: #ffffff;
+    margin-top: -100px;
+    text-align: center;
 }
 
 /* keep the section full-page */
@@ -106,7 +108,7 @@ section, .hero {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 70vh;
+  max-height: 60vh;
   object-fit: contain;
   border-radius: 8px;
 }
@@ -115,8 +117,8 @@ section, .hero {
 .hotspot.invisible {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 20%;            /* hit area — increase for easier touch */
-  height: 20%;
+  width: 2vw;            /* desktop hit area width (adjust if needed) */
+  height: 20%;           /* taller height so it covers thin layers vertically */
   background: transparent;
   border: none;
   padding: 0;
@@ -128,25 +130,30 @@ section, .hero {
 
 /* accessible focus ring for keyboard users */
 .hotspot.invisible:focus-visible {
-  box-shadow: 0 0 0 2px rgba(90,144,255,0.35);
-  border-radius: 2px;
+  box-shadow: 1 0 0 1px rgba(90,144,255,0.22);
+  border-radius: 4px;
+  outline: none;
+  width: 2vw;
+  height: 10vw;
 }
 
 /* info box */
 #earth-layer-info {
   position: absolute;
-  bottom: 28px;
+  bottom: 70px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 30;
-  background: rgba(0,0,0,0.65);
+  z-index: 20;
+  background: rgba(0,0,0,0.75);
   color: #fff;
-  padding: 10px 14px;
-  border-radius: 6px;
-  max-width: min(90%, 760px);
-  text-align: center;
-  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  border-radius: 8px;
+  width: auto;   
+  height: auto;          /* shrink to match text width */
+  text-align: center;      /* center text */
+  font-size: clamp(0.9rem, 1.1vw, 1rem);
   pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  display: inline-block;   /* allows true shrink-wrapping */
 }
 
 /* small-screen adjustments */
@@ -154,6 +161,11 @@ section, .hero {
   .image-hotspot-wrap { max-width: 420px; }
   .hotspot.invisible { width: 22%; height: 12%; } /* bigger touch areas on mobile */
   #earth-structure-img { max-height: 55vh; }
+  #earth-layer-info {
+    max-width: 90%;
+    min-height: 96px;
+    text-align: center;
+  }
 }
 
 /* SR-only (screen-reader friendly) fallback list */
@@ -174,20 +186,6 @@ section, .hero {
     max-height: 330;
     display: block;
     margin: 1.5rem auto 0.5rem auto;  /* top, right/left, bottom */
-}
-
-.earth-layer-label {
-    fill: #fff;
-    font-weight: 600;
-    pointer-events: none;
-
-    /* CONTROLLED scaling */
-    font-size: clamp(1rem, 1.4vw, .5rem);
-
-    /* outline */
-    paint-order: stroke;
-    stroke: rgba(0, 0, 0, 0.8);
-    stroke-width: 3px;
 }
 
 
