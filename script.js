@@ -71,29 +71,41 @@ console.log(sphereData)
 // ==========================
 // DOT FOR PAGES
 // ==========================
-document.addEventListener("DOMContentLoaded", () => {
+// document.addEventListener("DOMContentLoaded", () => {
+    console.log("Hello World");
+
+    // Locate the dot <nav> element
     const dots = document.querySelectorAll(".nav-dot");
 
+    // Identify active dot
     const updateActiveDot = () => {
         let closestDot = null;
         let closestDistance = Infinity;
 
+        // Iterate each dot <span> element
         dots.forEach(dot => {
+            // Get target ID from the attribute
             const targetId = dot.getAttribute("data-target");
+            // Find the element matched with ID name
             const targetEl = document.getElementById(targetId);
-            if (!targetEl) return;
+            // If not defined, return 0
+            if (!targetEl) {
+                console.error(`Element with ID: ${targetId} does not exist`);
+                return;
+            }
 
-            // distance from top of viewport to top of section
+            // Get the size/position for the element & find the abs distance
             const rect = targetEl.getBoundingClientRect();
             const distance = Math.abs(rect.top);
 
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestDot = dot;
-            }
+            // Update closestDot & closestDistance
+            closestDistance = Math.min(distance, closestDistance);
+            closestDot = distance < closestDistance ? dot : closestDot;
         });
 
+        // If cloestDot defined, do smth
         if (closestDot) {
+            // Reset all dot & Activate the selected dot
             dots.forEach(d => d.classList.remove("active"));
             closestDot.classList.add("active");
         }
@@ -127,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // initial update
     updateActiveDot();
-});
+// });
 
 
 // ==========================
